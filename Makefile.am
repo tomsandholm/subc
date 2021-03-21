@@ -1,2 +1,2 @@
-bin_PROGRAMS = suba
-suba_SOURCES = suba.c
+bin_PROGRAMS = subc
+subc_SOURCES = subc.c
