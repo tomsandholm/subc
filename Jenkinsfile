@@ -1,8 +1,17 @@
+// vi:set nu ai ap aw smd showmatch tabstop=4 shiftwidth=4: 
+
 pipeline {
   agent any
   options {
     timestamps();
     copyArtifactPermission('toprepo');
+  }
+  parameters {
+    string (
+        description: 'Tag Override Value',
+        name: 'tagovr',
+        defaultValue: ''
+    )
   }
 
   stages {
@@ -27,7 +36,30 @@ pipeline {
         sh """
           make all
           make dist
-          sudo checkinstall --install=no --pkgname ${env.JOB_NAME}
+          make package
+        """
+      }
+    }
+    
+    stage('tag') {
+        steps {
+            script {
+                if ( params.tagovr != '' ) {
+                    def TAGSTRING = "${params.tagovr}"
+                    echo "##### Tag OVERRIDE is applied"
+                    echo "##### Tag: $TAGSTRING"
+                    sh 'make -e STAG=$TAGSTRING stag'
+                } else {
+                    sh 'make stag'
+                }
+             }
+        }
+    }
+
+    stage('tag push') {
+      steps {
+        sh """
+          make stagpush
         """
       }
     }
@@ -39,4 +71,3 @@ pipeline {
     }
   }
 }
-
